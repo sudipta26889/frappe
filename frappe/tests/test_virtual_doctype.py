@@ -169,7 +169,10 @@ class TestVirtualDoctypes(IntegrationTestCase):
 			received.append(kwargs.get("page_length"))
 			return []
 
-		with patch.object(VirtualDoctypeTest, "get_list", staticmethod(fake_get_list)):
+		with (
+			patch.object(VirtualDoctypeTest, "get_list", staticmethod(fake_get_list)),
+			self.set_user("test@example.com"),
+		):
 			frappe.get_all(TEST_DOCTYPE_NAME)  # get_all means "no limit"
 			frappe.get_list(TEST_DOCTYPE_NAME, limit_page_length=0)
 			frappe.get_list(TEST_DOCTYPE_NAME)  # nothing passed: keep the default

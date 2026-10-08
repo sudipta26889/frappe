@@ -57,7 +57,9 @@ class Recorder(Document):
 
 	@staticmethod
 	def get_list(filters=None, start=0, page_length=20, order_by="duration desc"):
-		requests = Recorder.get_filtered_requests(filters)[start : start + page_length]
+		requests = Recorder.get_filtered_requests(filters)
+		# page_length 0 means "no limit" (frappe.get_all passes it)
+		requests = requests[start : start + page_length] if page_length else requests[start:]
 
 		if order_by_statment := order_by:
 			order_by_statment = order_by_statment.split(",")[0]

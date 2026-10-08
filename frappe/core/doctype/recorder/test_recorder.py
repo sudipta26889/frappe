@@ -8,6 +8,7 @@ import frappe
 import frappe.recorder
 from frappe.core.doctype.doctype.test_doctype import new_doctype
 from frappe.core.doctype.recorder.recorder import (
+	Recorder,
 	_fetch_postgres_table_indexes,
 	_fetch_table_stats,
 	_get_column_cardinality,
@@ -56,6 +57,21 @@ class TestRecorder(IntegrationTestCase):
 				match_flag = 1
 				break
 		self.assertEqual(match_flag, 1)
+
+	def test_recorder_list_page_length_zero_returns_all(self):
+		frappe.get_all("User")
+		self.stop_recorder()
+		for path in ("/api/method/a", "/api/method/b"):  # record two more, separate requests
+			set_request(path=path)
+			frappe.recorder.start()
+			frappe.recorder.record()
+			frappe.get_all("User")
+			self.stop_recorder()
+		everything = Recorder.get_filtered_requests([])
+		self.assertGreaterEqual(len(everything), 3)
+		# get_all asks for "no limit" (page length 0) and must get every request back
+		self.assertEqual(len(frappe.get_all("Recorder")), len(everything))
+		self.assertEqual(len(frappe.get_list("Recorder", page_length=1)), 1)
 
 	def test_recorder_list_filters(self):
 		user = frappe.qb.DocType("User")

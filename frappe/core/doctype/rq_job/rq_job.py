@@ -89,7 +89,8 @@ class RQJob(Document):
 
 		order_desc = "desc" in order_by
 		jobs = sorted(jobs, key=lambda j: j.creation, reverse=order_desc)
-		jobs = jobs[start : start + page_length]
+		# page_length 0 means "no limit" (frappe.get_all passes it)
+		jobs = jobs[start : start + page_length] if page_length else jobs[start:]
 
 		if as_list:
 			fields = fields or ["name"]
